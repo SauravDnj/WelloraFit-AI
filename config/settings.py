@@ -14,8 +14,21 @@ class Settings:
     APP_NAME = "WelloraFit AI"
     VERSION = "1.0.0"
     
-    # Groq API
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+    # Groq API - Check both Streamlit secrets and environment variables
+    @staticmethod
+    def get_api_key():
+        """Get API key from Streamlit secrets or environment"""
+        try:
+            import streamlit as st
+            # Try Streamlit secrets first (for cloud deployment)
+            if hasattr(st, 'secrets') and 'GROQ_API_KEY' in st.secrets:
+                return st.secrets['GROQ_API_KEY']
+        except:
+            pass
+        # Fall back to environment variable (for local development)
+        return os.getenv("GROQ_API_KEY", "")
+    
+    GROQ_API_KEY = get_api_key.__func__()
     GROQ_TEXT_MODEL = "llama-3.3-70b-versatile"  # Updated to current model
     GROQ_VISION_MODEL = "llama-3.2-90b-vision-preview"
     
@@ -41,10 +54,11 @@ class Settings:
     @staticmethod
     def validate():
         """Validate critical settings"""
-        if not Settings.GROQ_API_KEY:
+        api_key = Settings.get_api_key()
+        if not api_key:
             raise ValueError(
-                "GROQ_API_KEY not found in environment variables. "
-                "Please create a .env file with your API key."
+                "GROQ_API_KEY not found. "
+                "Streamlit Cloud: Add to app secrets. Local: Add to .env file."
             )
         
         # Create necessary directories

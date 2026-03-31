@@ -110,6 +110,13 @@ def show_chat_interface(user):
 
 def process_text_input(user, text: str, entry_type: str):
     """Process text-based meal/workout logging with DB storage"""
+    # Check if Groq service is available
+    if not groq_service:
+        st.error("⚠️ AI service not available. GROQ_API_KEY not configured.")
+        st.info("**Streamlit Cloud:** App Settings → Secrets → Add GROQ_API_KEY")
+        st.info("**Local Development:** Add GROQ_API_KEY to .env file")
+        return
+    
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     # Add user message to chat

@@ -12,10 +12,13 @@ class GroqService:
     
     def __init__(self):
         """Initialize Groq client"""
-        if not settings.GROQ_API_KEY:
-            raise ValueError("GROQ_API_KEY not configured")
+        # Get API key
+        api_key = settings.GROQ_API_KEY
         
-        self.client = Groq(api_key=settings.GROQ_API_KEY)
+        if not api_key:
+            raise ValueError("GROQ_API_KEY not configured. Add to Streamlit secrets or .env file.")
+        
+        self.client = Groq(api_key=api_key)
         self.text_model = settings.GROQ_TEXT_MODEL
         self.vision_model = settings.GROQ_VISION_MODEL
     
@@ -217,5 +220,6 @@ Provide insights in 2-3 short, friendly paragraphs. Focus on what's going well a
             print(f"Error generating insights: {e}")
             return "Keep up the great work tracking your nutrition! Stay consistent with your logging for the best results."
 
-# Create singleton instance
-groq_service = GroqService() if settings.GROQ_API_KEY else None
+# Initialize global service instance with error handling
+try:
+    groq_service = GroqService
