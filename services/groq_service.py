@@ -117,7 +117,7 @@ Respond ONLY with valid JSON, no additional text."""
     
     def analyze_food_photo(self, image_path: str) -> Dict[str, Any]:
         """
-        Analyze food photo and extract nutritional information
+        Analyze food photo and extract nutritional information with high accuracy
         Returns dict with calories, protein, carbs, fat, etc.
         """
         try:
@@ -129,36 +129,56 @@ Respond ONLY with valid JSON, no additional text."""
             ext = image_path.lower().split('.')[-1]
             mime_type = f"image/{ext if ext != 'jpg' else 'jpeg'}"
             
-            prompt = """Analyze this food photo and provide detailed nutritional information.
+            prompt = """You are a professional nutritionist and certified dietitian analyzing a food photo. Use your expertise to provide highly accurate nutrition data.
 
-Identify the food items, estimate portion sizes, and provide nutritional breakdown.
+ANALYZE THE IMAGE:
+1. IDENTIFY all food items visible
+2. ESTIMATE portion sizes using visual cues (plate size, utensils, hand for scale)
+3. DETECT cooking methods if visible (grilled, fried, steamed, etc.)
+4. CALCULATE nutrition using USDA standard values
+
+BE PRECISE:
+- Use realistic portion estimates (e.g., "1 medium chicken breast ~200g")
+- Consider plate/bowl size as reference
+- If multiple items, analyze each separately
+- Account for visible cooking oil, sauce, toppings
+- Use decimal precision for accuracy
 
 Respond in this exact JSON format (numbers only, no units):
 {
-    "description": "Description of foods visible in the image",
-    "calories": estimated total calories (number),
-    "protein_g": protein in grams (number),
-    "carbs_g": total carbohydrates in grams (number),
-    "fat_g": total fat in grams (number),
-    "fiber_g": fiber in grams (number),
-    "sugar_g": sugar in grams (number),
+    "description": "Detailed list of identified foods with portions (e.g., '1 grilled chicken breast ~200g, 1 cup steamed broccoli, 1/2 cup brown rice')",
+    "calories": total calories (precise number, e.g., 487),
+    "protein_g": protein in grams (decimal precision, e.g., 54.3),
+    "carbs_g": total carbohydrates in grams (decimal precision),
+    "fat_g": total fat in grams (decimal precision),
+    "fiber_g": dietary fiber in grams (decimal precision),
+    "sugar_g": total sugars in grams (decimal precision),
     "vitamins": {
-        "vitamin_a": amount in mcg or "unknown",
+        "vitamin_a": amount in mcg RAE or "unknown",
         "vitamin_c": amount in mg or "unknown",
         "vitamin_d": amount in mcg or "unknown",
         "calcium": amount in mg or "unknown",
         "iron": amount in mg or "unknown"
     },
-    "portion_estimate": "Description of estimated portion size",
-    "confidence": "high/medium/low",
-    "notes": "Any additional observations or assumptions"
+    "portion_estimate": "Method used for estimation (e.g., 'Based on standard dinner plate size')",
+    "confidence": "high/medium/low (based on image clarity)",
+    "notes": "Cooking method observed, any assumptions made, USDA reference if applicable"
 }
+
+Examples for reference:
+- Grilled chicken breast (200g): ~330 cal, 62g protein, 0g carbs, 7g fat
+- Steamed broccoli (1 cup/156g): ~55 cal, 3.7g protein, 11g carbs, 0.6g fat, 5g fiber
+- Brown rice (1/2 cup cooked/98g): ~108 cal, 2.5g protein, 22g carbs, 0.9g fat
 
 Respond ONLY with valid JSON, no additional text."""
 
             response = self.client.chat.completions.create(
                 model=self.vision_model,
                 messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a certified nutritionist with expertise in visual portion estimation and USDA nutrition data. Provide accurate, evidence-based analysis."
+                    },
                     {
                         "role": "user",
                         "content": [
@@ -175,8 +195,8 @@ Respond ONLY with valid JSON, no additional text."""
                         ]
                     }
                 ],
-                temperature=0.3,
-                max_tokens=1000
+                temperature=0.2,  # Lower for more accurate results
+                max_tokens=1500
             )
             
             # Extract and parse JSON response
