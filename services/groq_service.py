@@ -27,29 +27,42 @@ class GroqService:
         Analyze meal description and extract nutritional information
         Returns dict with calories, protein, carbs, fat, fiber, sugar, etc.
         """
-        prompt = f"""You are a nutrition expert. Analyze this meal/food description and provide detailed nutritional information.
+        prompt = f"""You are a professional nutritionist and certified dietitian with expertise in food composition analysis. Analyze this meal/food with high accuracy using standard USDA nutrition database values.
 
 Meal description: "{description}"
 
+IMPORTANT INSTRUCTIONS:
+1. Use actual USDA nutrition data for common foods
+2. Consider realistic portion sizes (e.g., "1 apple" = medium apple ~180g, "2 eggs" = large eggs ~100g total)
+3. Be precise with calculations - don't round excessively
+4. If portion not specified, assume standard serving size
+5. For homemade/cooked items, account for cooking methods
+6. Include ALL macronutrients and micronutrients when data is available
+
 Provide your response in this exact JSON format (numbers only, no units):
 {{
-    "description": "Cleaned up description of the meal",
-    "calories": estimated total calories (number),
-    "protein_g": protein in grams (number),
-    "carbs_g": total carbohydrates in grams (number),
-    "fat_g": total fat in grams (number),
-    "fiber_g": fiber in grams (number),
-    "sugar_g": sugar in grams (number),
+    "description": "Detailed description with estimated portions",
+    "calories": total calories (precise number, e.g., 156 not 150),
+    "protein_g": protein in grams (decimal precision, e.g., 12.6),
+    "carbs_g": total carbohydrates in grams (decimal precision),
+    "fat_g": total fat in grams (decimal precision),
+    "fiber_g": dietary fiber in grams (decimal precision),
+    "sugar_g": total sugars in grams (decimal precision),
     "vitamins": {{
-        "vitamin_a": amount in mcg or "unknown",
+        "vitamin_a": amount in mcg RAE or "unknown",
         "vitamin_c": amount in mg or "unknown",
         "vitamin_d": amount in mcg or "unknown",
         "calcium": amount in mg or "unknown",
         "iron": amount in mg or "unknown"
     }},
     "confidence": "high/medium/low",
-    "notes": "Any additional nutritional notes or assumptions made"
+    "notes": "Source of nutrition data, assumptions about portions, or cooking methods considered"
 }}
+
+Examples for reference:
+- "2 boiled eggs" = ~156 calories, 12.6g protein, 1.1g carbs, 10.6g fat
+- "1 medium apple" = ~95 calories, 0.5g protein, 25g carbs, 0.3g fat, 4.4g fiber
+- "1 cup cooked white rice" = ~205 calories, 4.3g protein, 45g carbs, 0.4g fat
 
 Respond ONLY with valid JSON, no additional text."""
 
@@ -59,15 +72,15 @@ Respond ONLY with valid JSON, no additional text."""
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a precise nutrition analyst. Always respond with valid JSON only."
+                        "content": "You are a certified nutritionist with access to USDA FoodData Central. Provide accurate, evidence-based nutrition analysis. Always respond with valid JSON only."
                     },
                     {
                         "role": "user",
                         "content": prompt
                     }
                 ],
-                temperature=0.3,
-                max_tokens=1000
+                temperature=0.2,  # Lower temperature for more consistent, accurate responses
+                max_tokens=1200
             )
             
             # Extract and parse JSON response

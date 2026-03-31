@@ -29,8 +29,8 @@ class Settings:
         return os.getenv("GROQ_API_KEY", "")
     
     GROQ_API_KEY = get_api_key.__func__()
-    GROQ_TEXT_MODEL = "llama-3.3-70b-versatile"  # Updated to current model
-    GROQ_VISION_MODEL = "llama-3.2-90b-vision-preview"
+    GROQ_TEXT_MODEL = "llama-3.3-70b-versatile"  # Best for text analysis
+    GROQ_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"  # Vision model with 20MB limit
     
     # Database
     DATABASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "journable.db")
