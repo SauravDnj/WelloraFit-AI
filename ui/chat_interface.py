@@ -176,6 +176,13 @@ def process_text_input(user, text: str, entry_type: str):
 
 def process_photo_input(user, uploaded_file, entry_type: str):
     """Process photo-based meal logging with DB storage"""
+    # Check if Groq service is available
+    if not groq_service:
+        st.error("⚠️ AI service not available. GROQ_API_KEY not configured.")
+        st.info("**Streamlit Cloud:** App Settings → Secrets → Add GROQ_API_KEY")
+        st.info("**Local Development:** Add GROQ_API_KEY to .env file")
+        return
+    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     photo_filename = f"{user['id']}_{timestamp}_{uploaded_file.name}"
     photo_path = os.path.join(settings.UPLOAD_FOLDER, photo_filename)

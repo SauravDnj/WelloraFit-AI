@@ -222,4 +222,8 @@ Provide insights in 2-3 short, friendly paragraphs. Focus on what's going well a
 
 # Initialize global service instance with error handling
 try:
-    groq_service = GroqService
+    groq_service = GroqService()
+except Exception as e:
+    print(f"⚠️ GroqService init failed: {e}")
+    print("Add GROQ_API_KEY to Streamlit secrets or .env file")
+    groq_service = None
